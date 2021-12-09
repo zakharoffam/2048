@@ -1,0 +1,48 @@
+.app {
+  text-align: center;
+}
+
+.control-panel {
+  display: block;
+  margin-top: 50px;
+}
+
+.button-start {
+  width: 200px;
+  height: 50px;
+}
+
+.button-direction {
+  width: 50px;
+  height: 50px;
+}
+
+.playing-field {
+  display: inline-block;
+  background: #bbada0;
+  margin-top: 50px;
+  padding: 15px;
+  border-radius: 15px;
+  width: 500px;
+  height: 500px;
+}
+
+.row {
+  display: inline-block;
+}
+
+.cell {
+  display: inline-block;
+  background: rgba(238, 228, 218, 0.35);
+  border-radius: 5px;
+  margin-right: 19px;
+  margin-bottom: 19px;
+  width: 106px;
+  height: 106px;
+  text-align: center;
+  font-width: bold;
+}
+
+.cell-2 {
+  background: #776e65;
+}
