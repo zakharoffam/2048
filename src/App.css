@@ -40,9 +40,48 @@
   width: 106px;
   height: 106px;
   text-align: center;
-  font-width: bold;
 }
 
 .cell-2 {
   background: #776e65;
+}
+
+.cell-4 {
+  background: #796753;
+}
+
+.cell-8 {
+  background: #5d4d3d;
+}
+
+.cell-16 {
+  background: #573d23;
+}
+
+.cell-32 {
+  background: #643e19;
+}
+
+.cell-64 {
+  background: #9a6734;
+}
+
+.cell-128 {
+  background: #b97530;
+}
+
+.cell-256 {
+  background: #d77f27;
+}
+
+.cell-512 {
+  background: #f67f0e;
+}
+
+.cell-1024 {
+  background: #ff8000;
+}
+
+.cell-2048 {
+  background: #ff1b00;
 }

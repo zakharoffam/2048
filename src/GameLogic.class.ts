@@ -1,11 +1,11 @@
 export type Matrix = number[][];
 export enum GameStatuses {IDLE, PROCESSING, WIN, END}
 
-export class Logical {
+export class GameLogicClass {
   /**
    * Чистая матрица
    */
-  public emptyMatrix = (): Matrix => [
+  public static emptyMatrix = (): Matrix => [
     [0, 0, 0, 0],
     [0, 0, 0, 0],
     [0, 0, 0, 0],
@@ -18,7 +18,7 @@ export class Logical {
    * @param matrix
    * @param value
    */
-  private hasValue = (matrix: Matrix, value: number): boolean => {
+  private static hasValue = (matrix: Matrix, value: number): boolean => {
     for (let i = 0; i < matrix.length; i++) {
       for (let j = 0; j < matrix[i].length; j++) {
         if (matrix[i][j] === value) return true;
@@ -32,15 +32,15 @@ export class Logical {
    * Имеет ли матрица свободные ячейки?
    * @param matrix
    */
-  private hasFreeCell = (matrix: Matrix) => {
-    return this.hasValue(matrix, 0);
+  private static isFull = (matrix: Matrix) => {
+    return !this.hasValue(matrix, 0);
   };
 
 
   /**
    * Получить случайную позицию матрицы
    */
-  private getRandomPosition = (): [number, number] => {
+  private static getRandomPosition = (): [number, number] => {
     return [Math.floor(Math.random() * 4), Math.floor(Math.random() * 4)];
   };
 
@@ -49,9 +49,9 @@ export class Logical {
    * Генерация значения 2 в случайной свободной ячейки
    * @param matrix
    */
-  public generateRandom = (matrix: Matrix) => {
+  public static generateRandom = (matrix: Matrix) => {
     // Если матрица заполнена, вернем ее не генерируя новое значение
-    if (!this.hasFreeCell(matrix)) return matrix;
+    if (this.isFull(matrix)) return matrix;
     // Генерируем случайную позицию в матрице, пока не найдем пустую
     let [x, y] = this.getRandomPosition();
     while (matrix[x][y] !== 0) {
@@ -68,18 +68,18 @@ export class Logical {
    * Смещает все значение не равные 0 влево
    * @param matrix
    */
-  private compress = (matrix: Matrix) => {
-    const newMatrix = this.emptyMatrix();
+  private static compress = (matrix: Matrix) => {
+    const nextMatrix = this.emptyMatrix();
     for (let i = 0; i < matrix.length; i++) {
       let columnIndex = 0;
       for (let j = 0; j < matrix[i].length; j++) {
         if (matrix[i][j] !== 0) {
-          newMatrix[i][columnIndex] = matrix[i][j];
+          nextMatrix[i][columnIndex] = matrix[i][j];
           columnIndex++;
         }
       }
     }
-    return newMatrix;
+    return nextMatrix;
   };
 
 
@@ -88,7 +88,7 @@ export class Logical {
    * Суммирует равные значения в левую сторону и оставляет одну ячейку свободной
    * @param matrix
    */
-  private merge = (matrix: Matrix) => {
+  private static merge = (matrix: Matrix) => {
     for (let i = 0; i < matrix.length; i++) {
       for (let j = 0; j < matrix[i].length; j++) {
         if (matrix[i][j] !== 0 && matrix[i][j] === matrix[i][j + 1]) {
@@ -105,7 +105,7 @@ export class Logical {
    * Перемещение всех значений матрицы влево
    * @param matrix
    */
-  private moveLeft = (matrix: Matrix) => {
+  private static moveLeft = (matrix: Matrix) => {
     // сжатие -> слияние -> сжатие
     return this.compress(this.merge(this.compress(matrix)));
   };
@@ -115,7 +115,7 @@ export class Logical {
    * Разворот матрицы на 180 градусов
    * @param matrix
    */
-  private rotateMatrix180Degrees = (matrix: Matrix) => {
+  private static rotateMatrix180Degrees = (matrix: Matrix) => {
     const reverseMatrix = this.emptyMatrix();
     for (let i = 0; i < matrix.length; i++) {
       for (let j = 0; j < matrix[i].length; j++) {
@@ -130,7 +130,7 @@ export class Logical {
    * Перемещение всех значений матрицы вправо
    * @param matrix
    */
-  private moveRight = (matrix: Matrix) => {
+  private static moveRight = (matrix: Matrix) => {
     // разворачиваем на 180 -> сдвигаем влево -> разворачиваем обратно
     return this.rotateMatrix180Degrees(this.moveLeft(this.rotateMatrix180Degrees(matrix)));
   };
@@ -140,7 +140,7 @@ export class Logical {
    * Разворот матрицы на 90 градусов влево
    * @param matrix
    */
-  private rotateMatrix90DegreesToLeft = (matrix: Matrix) => {
+  private static rotateMatrix90DegreesToLeft = (matrix: Matrix) => {
     const rotateMatrix = this.emptyMatrix();
     for (let i = 0; i < matrix.length; i++) {
       for (let j = 0; j < matrix[i].length; j++) {
@@ -155,11 +155,11 @@ export class Logical {
    * Разворот матрицы на 90 градусов вправо
    * @param matrix
    */
-  private rotateMatrix90DegreesToRight = (matrix: Matrix) => {
+  private static rotateMatrix90DegreesToRight = (matrix: Matrix) => {
     const rotateMatrix = this.emptyMatrix();
     for (let i = 0; i < matrix.length; i++) {
       for (let j = 0; j < matrix[i].length; j++) {
-        rotateMatrix[i][j] = matrix[matrix[i].length - 1 - j][j];
+        rotateMatrix[i][j] = matrix[matrix[i].length - 1 - j][i];
       }
     }
     return rotateMatrix;
@@ -170,9 +170,10 @@ export class Logical {
    * Перемещение всех значений матрицы вверх
    * @param matrix
    */
-  private moveUp = (matrix: Matrix) => {
-    // разворачиваем на 90 градусов влево -> сдвигаем влево -> разворачиваем на 90 градусов вправо
-    return this.rotateMatrix90DegreesToRight(this.moveLeft(this.rotateMatrix90DegreesToLeft(matrix)));
+  private static moveUp = (matrix: Matrix) => {
+    const rotate90ToLeft = this.rotateMatrix90DegreesToLeft(matrix);
+    const nextMatrix = this.moveLeft(rotate90ToLeft);
+    return this.rotateMatrix90DegreesToRight(nextMatrix);
   };
 
 
@@ -180,9 +181,10 @@ export class Logical {
    * Перемещение всех значений матрицы вниз
    * @param matrix
    */
-  private moveDown = (matrix: Matrix) => {
-    // разворачиваем на 90 градусов вправо -> сдвигаем влево -> разворачиваем на 90 градусов влево
-    return this.rotateMatrix90DegreesToLeft(this.moveLeft(this.rotateMatrix90DegreesToRight(matrix)));
+  private static moveDown = (matrix: Matrix) => {
+    const rotate90ToRight = this.rotateMatrix90DegreesToRight(matrix);
+    const nextMatrix = this.moveLeft(rotate90ToRight);
+    return this.rotateMatrix90DegreesToLeft(nextMatrix);
   };
 
 
@@ -190,7 +192,7 @@ export class Logical {
    * Проверить набор значения 2048
    * @param matrix
    */
-  private checkWin = (matrix: Matrix) => {
+  private static checkWin = (matrix: Matrix) => {
     return this.hasValue(matrix, 2048);
   };
 
@@ -200,7 +202,7 @@ export class Logical {
    * @param prevMatrix
    * @param nextMatrix
    */
-  private notSame = (prevMatrix: Matrix, nextMatrix: Matrix) => {
+  private static notSame = (prevMatrix: Matrix, nextMatrix: Matrix) => {
     for (let i = 0; i < prevMatrix.length; i++) {
       for (let j = 0; j < prevMatrix[i].length; j++) {
         if (prevMatrix[i][j] !== nextMatrix[i][j]) {
@@ -216,7 +218,7 @@ export class Logical {
    * Конец игры?
    * @param matrix
    */
-  private isTheEndGame = (matrix: Matrix) => {
+  private static isTheEndGame = (matrix: Matrix) => {
     // Сверяем две матрицы, текущую и если ее смести в одну из сторон
     if (this.notSame(matrix, this.moveLeft(matrix))) return false;
     if (this.notSame(matrix, this.moveRight(matrix))) return false;
@@ -230,7 +232,7 @@ export class Logical {
    * Проверка состояния игры.
    * Не кончилась ли она или может мы победили?
    */
-  public checkState = (matrix: Matrix): GameStatuses => {
+  public static checkState = (matrix: Matrix): GameStatuses => {
     if (this.checkWin(matrix)) return GameStatuses.WIN;
     if (this.isTheEndGame(matrix)) return GameStatuses.END;
     return GameStatuses.PROCESSING;
@@ -240,28 +242,16 @@ export class Logical {
   /**
    * Функции действий
    */
-  public left = (matrix: Matrix) => {
-    console.log('left');
-    const newMatrix = this.moveLeft(matrix);
-    this.checkState(newMatrix);
-    return this.generateRandom(newMatrix);
+  public static left = (matrix: Matrix) => {
+    return this.generateRandom(this.moveLeft(matrix));
   };
-  public right = (matrix: Matrix) => {
-    console.log('right');
-    const newMatrix = this.moveRight(matrix);
-    this.checkState(newMatrix);
-    return this.generateRandom(newMatrix);
+  public static right = (matrix: Matrix) => {
+    return this.generateRandom(this.moveRight(matrix));
   };
-  public up = (matrix: Matrix) => {
-    console.log('up');
-    const newMatrix = this.moveUp(matrix);
-    this.checkState(newMatrix);
-    return this.generateRandom(newMatrix);
+  public static up = (matrix: Matrix) => {
+    return this.generateRandom(this.moveUp(matrix));
   };
-  public down = (matrix: Matrix) => {
-    console.log('down');
-    const newMatrix = this.moveDown(matrix);
-    this.checkState(newMatrix);
-    return this.generateRandom(newMatrix);
+  public static down = (matrix: Matrix) => {
+    return this.generateRandom(this.moveDown(matrix));
   };
 }

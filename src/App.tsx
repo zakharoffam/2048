@@ -1,12 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import { GameStatuses, Logical, Matrix } from "./Logical.class";
+import { GameLogicClass, GameStatuses, Matrix } from "./GameLogic.class";
+
+
+const Cell = (props: { value: number }) => {
+  return (
+    <div className={`cell cell-${props.value}`}>
+      {props.value > 0 ? props.value : 0}
+    </div>
+  )
+}
 
 
 function App() {
-  const action = new Logical();
-  const [matrix, updateMatrix] = useState<Matrix>(action.emptyMatrix());
+  const [matrix, updateMatrix] = useState<Matrix>(GameLogicClass.emptyMatrix());
   const [gameStatus, setGameStatus] = useState<GameStatuses>(GameStatuses.IDLE);
+  const [step, setStep] = useState<number>(0);
 
   /**
    * Обработчик события нажатия стрелочных кнопок клавиатуры
@@ -14,23 +23,36 @@ function App() {
    */
   const handlePressKey = (event: KeyboardEvent) => {
     if (gameStatus === GameStatuses.PROCESSING) {
-      if (event.key === 'ArrowLeft') updateMatrix(action.left(matrix));
-      if (event.key === 'ArrowRight') updateMatrix(action.right(matrix));
-      if (event.key === 'ArrowUp') updateMatrix(action.up(matrix));
-      if (event.key === 'ArrowDown') updateMatrix(action.down(matrix));
+      if (event.key === 'ArrowLeft') {
+        updateMatrix(GameLogicClass.left(matrix));
+        setStep(step + 1);
+      }
+      if (event.key === 'ArrowRight') {
+        updateMatrix(GameLogicClass.right(matrix));
+        setStep(step + 1);
+      }
+      if (event.key === 'ArrowUp') {
+        updateMatrix(GameLogicClass.up(matrix));
+        setStep(step + 1);
+      }
+      if (event.key === 'ArrowDown') {
+        updateMatrix(GameLogicClass.down(matrix));
+        setStep(step + 1);
+      }
     }
   }
 
 
+  // Отслеживаем нажатия клавиш на клавиатуре
   useEffect(() => {
-    // TODO: В будущем повесить на элемент DOM
     window.addEventListener('keydown', handlePressKey);
     return () => window.removeEventListener('keydown', handlePressKey);
   });
 
 
+  // Проверка статуса игры при каждом изменении матрицы
   useEffect(() => {
-    setGameStatus(action.checkState(matrix));
+    setGameStatus(GameLogicClass.checkState(matrix));
   }, [matrix]);
 
 
@@ -41,7 +63,7 @@ function App() {
           className="button-start"
           disabled={gameStatus === GameStatuses.PROCESSING}
           onClick={() => {
-            updateMatrix(action.generateRandom(action.emptyMatrix()));
+            updateMatrix(GameLogicClass.generateRandom(GameLogicClass.emptyMatrix()));
             setGameStatus(GameStatuses.PROCESSING);
           }}
         >
@@ -51,7 +73,7 @@ function App() {
           className="button-start"
           disabled={gameStatus !== GameStatuses.PROCESSING}
           onClick={() => {
-            updateMatrix(action.generateRandom(action.emptyMatrix()));
+            updateMatrix(GameLogicClass.generateRandom(GameLogicClass.emptyMatrix()));
             setGameStatus(GameStatuses.PROCESSING);
           }}
         >
@@ -64,25 +86,17 @@ function App() {
         <div>
           <div className="playing-field">
             {matrix?.map((row, index) => (
-              <div key={'row-' + index} className="row">
-                {row.map((cell, index) => {
-                  const style = cell > 0
-                    ? 'cell-2 cell'
-                    : 'cell'
-                  return (
-                    <div key={'cell-' + index} className={style}>
-                      {cell}
-                    </div>
-                  )
-                })}
+              <div key={`row-${index}`} className="row">
+                {row.map((cell, index) => <Cell key={`cell-${index}`} value={cell} />)}
               </div>
             ))}
           </div>
           <div className="control-panel">
-            <button className="button-direction" onClick={() => updateMatrix(action.up(matrix))}>Up</button>
-            <button className="button-direction" onClick={() => updateMatrix(action.down(matrix))}>Down</button>
-            <button className="button-direction" onClick={() => updateMatrix(action.left(matrix))}>Left</button>
-            <button className="button-direction" onClick={() => updateMatrix(action.right(matrix))}>Right</button>
+            <p>Шаг №{step}</p>
+            <button className="button-direction" onClick={() => updateMatrix(GameLogicClass.up(matrix))}>Up</button>
+            <button className="button-direction" onClick={() => updateMatrix(GameLogicClass.down(matrix))}>Down</button>
+            <button className="button-direction" onClick={() => updateMatrix(GameLogicClass.left(matrix))}>Left</button>
+            <button className="button-direction" onClick={() => updateMatrix(GameLogicClass.right(matrix))}>Right</button>
           </div>
         </div>
       )}
